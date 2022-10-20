@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - $PWD/postgresql/data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    restart: always
+
+  elastic:
+    image: elasticsearch:7.17.6
+    environment:
+      - discovery.type=single-node
+      - ingest.geoip.downloader.enabled=false
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms200m -Xmx200m
+    ports:
+      - "9200:9200"
+    restart: on-failure
