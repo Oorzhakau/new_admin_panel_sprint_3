@@ -18,7 +18,7 @@ class PostgresDSL(BaseSettings):
     port: str = Field(default='5432', env='DB_PORT')
 
     class Config:
-        env_file = os.environ.get('PATH', default='../.env')
+        env_file = os.environ.get('PATH_TO_ENV', default='../.env')
         env_file_encoding = 'utf-8'
 
 
@@ -135,7 +135,7 @@ class ElasticDSL(BaseSettings):
     }
 
     class Config:
-        env_file = os.environ.get('PATH', default='../.env')
+        env_file = os.environ.get('PATH_TO_ENV', default='../.env')
         env_file_encoding = 'utf-8'
 
 
@@ -149,7 +149,7 @@ class Settings(BaseSettings):
     ELASTIC_DSL: ElasticDSL = ElasticDSL()
 
     class Config:
-        env_file = os.environ.get('PATH', default='../.env')
+        env_file = os.environ.get('PATH_TO_ENV', default='../.env')
         env_file_encoding = 'utf-8'
 
 
