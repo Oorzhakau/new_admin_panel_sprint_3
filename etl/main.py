@@ -6,7 +6,7 @@ import time
 from elasticsearch.exceptions import ConnectionError
 from psycopg2 import OperationalError
 
-import config
+from config import SETTINGS
 from utils.backoff import backoff
 from utils.elastic_loader import ElasticLoader, es_create_connection
 from utils.postgres_extractor import (PostgresMovieExtractor,
@@ -35,18 +35,17 @@ def load(extractor: PostgresMovieExtractor, loader: ElasticLoader) -> None:
     loader.save()
 
 
-@backoff((ConnectionError,))
-@backoff((OperationalError,))
+@backoff((ConnectionError, OperationalError))
 def etl() -> None:
     """
     Функция, описывающая процесс ETL.
     :return:
     """
     logging.info('Initializing postgresql and elasticsearch connection.')
-    with postgres_conn_context(config.POSTGRES_DB) as pg_conn, \
-            es_create_connection(**config.ELASTIC_HOST) as es_client:
-        state = State(JsonFileStorage(config.STATE_FILE))
-        loader = ElasticLoader(es_client, config.ES_INDEX_NAME)
+    with postgres_conn_context(SETTINGS.POSTGRES_DSL.dict()) as pg_conn, \
+            es_create_connection(**SETTINGS.ELASTIC_DSL.dict()) as es_client:
+        state = State(JsonFileStorage(SETTINGS.STATE_FILE))
+        loader = ElasticLoader(es_client, SETTINGS.ELASTIC_DSL.ES_INDEX_NAME)
         ext_obj = PostgresMovieExtractor(pg_conn, state)
         logger.info('Started loading.')
         load(ext_obj, loader)
@@ -56,4 +55,4 @@ def etl() -> None:
 if __name__ == '__main__':
     while True:
         etl()
-        time.sleep(config.ETL_DELAY)
+        time.sleep(SETTINGS.ETL_DELAY)

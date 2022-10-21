@@ -2,7 +2,7 @@ import inspect
 import os
 import sys
 from contextlib import contextmanager
-from typing import Generator, List, Optional
+from typing import Generator, Optional
 
 from elasticsearch import Elasticsearch, helpers
 from elasticsearch.exceptions import NotFoundError
@@ -13,7 +13,7 @@ currentdir = os.path.dirname(
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from config import BATCH_SIZE, ES_MAPPING, logging
+from config import SETTINGS, logging
 
 
 @contextmanager
@@ -31,8 +31,8 @@ class ElasticLoader:
     def __init__(self,
                  es_client: Elasticsearch,
                  index: str,
-                 mapping: dict = ES_MAPPING,
-                 batch_size: int = BATCH_SIZE):
+                 mapping: dict = SETTINGS.ELASTIC_DSL.ES_MAPPING,
+                 batch_size: int = SETTINGS.BATCH_SIZE):
         """
         Инициализация загрузчика
         :param es_client: соединение с Elasticsearch сервером
@@ -90,7 +90,7 @@ class ElasticLoader:
         :return:
         """
 
-        def get_actions(documents: List[dict]) -> Generator[dict, None, None]:
+        def get_actions(documents: list[dict]) -> Generator[dict, None, None]:
             for document in documents:
                 action = {
                     '_index': self.index,

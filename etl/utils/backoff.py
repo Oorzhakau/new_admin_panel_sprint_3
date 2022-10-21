@@ -3,12 +3,15 @@ import time
 from functools import wraps
 from typing import Any, Callable
 
+logger = logging.getLogger()
+
 
 def backoff(
         exceptions: tuple,
-        start_sleep_time=0.1,
-        factor=2,
-        border_sleep_time=10
+        start_sleep_time: float = 0.1,
+        factor: int = 2,
+        border_sleep_time: int = 10,
+        log: logging = logger
 ) -> Callable[..., Any]:
     """
     Функция для повторного выполнения функции через некоторое время,
@@ -23,6 +26,7 @@ def backoff(
     :param start_sleep_time: начальное время повтора
     :param factor: во сколько раз нужно увеличить время ожидания
     :param border_sleep_time: граничное время ожидания
+    :param log: объект логгирования
     :return: результат выполнения функции
     """
 
@@ -33,8 +37,8 @@ def backoff(
             while True:
                 try:
                     return func(*args, **kwargs)
-                except exceptions:
-                    logging.error("Reconnect to resource")
+                except exceptions as err:
+                    log.exception(err)
                     t = t * factor
                     if t > border_sleep_time:
                         t = border_sleep_time

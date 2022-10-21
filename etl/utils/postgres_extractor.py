@@ -2,7 +2,7 @@ import inspect
 import os
 import sys
 from contextlib import contextmanager
-from typing import Generator, Tuple
+from typing import Generator
 
 import psycopg2
 from psycopg2.extras import DictCursor, RealDictRow
@@ -13,7 +13,7 @@ currentdir = os.path.dirname(
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
-from config import BATCH_SIZE, FIRST_DATE
+from config import SETTINGS
 from utils.storage import State
 from utils.transformer import Filmwork
 
@@ -80,7 +80,7 @@ class PostgresMovieExtractor:
             self,
             query: str,
             values: tuple,
-            batch_size: int = BATCH_SIZE
+            batch_size: int = SETTINGS.BATCH_SIZE
     ) -> Generator[list, None, None]:
         """
         Метод для получения данных из базы по запросу.
@@ -95,7 +95,7 @@ class PostgresMovieExtractor:
                 yield rows
 
     @staticmethod
-    def _split_batch(batch) -> Generator[Tuple[Tuple[str], str], None, None]:
+    def _split_batch(batch) -> Generator[tuple[tuple[str], str], None, None]:
         """
         Извлечб ID и раннюю дату модификации из батча данных.
         :param batch: батч данных
@@ -107,8 +107,8 @@ class PostgresMovieExtractor:
 
     def ids_film_work_since_date(
             self,
-            since: str = FIRST_DATE
-    ) -> Generator[Tuple[Tuple[str], str], None, None]:
+            since: str = SETTINGS.FIRST_DATE
+    ) -> Generator[tuple[tuple[str], str], None, None]:
         """
         Получить ID фильмов, отредактированных с указанной даты.
         :param since: дата модификации
@@ -127,8 +127,8 @@ class PostgresMovieExtractor:
             yield from self._split_batch(batch)
 
     def ids_genre_since_date(
-            self, since: str = FIRST_DATE
-    ) -> Generator[Tuple[Tuple[str], str], None, None]:
+            self, since: str = SETTINGS.FIRST_DATE
+    ) -> Generator[tuple[tuple[str], str], None, None]:
         """Получить ID фильмов, у которых изменился жанр.
         """
         query = """
@@ -145,8 +145,8 @@ class PostgresMovieExtractor:
 
     def ids_person_since_date(
             self,
-            since: str = FIRST_DATE
-    ) -> Generator[Tuple[Tuple[str], str], None, None]:
+            since: str = SETTINGS.FIRST_DATE
+    ) -> Generator[tuple[tuple[str], str], None, None]:
         """Получить ID фильмов, у которых изменились персоны."""
         query = """
             SELECT
@@ -162,7 +162,7 @@ class PostgresMovieExtractor:
             yield from self._split_batch(batch)
 
     def get_filmworks(self,
-                      ids: Tuple[str]) -> Generator[RealDictRow, None, None]:
+                      ids: tuple[str]) -> Generator[RealDictRow, None, None]:
         """
         Получить фильмы с указанными ID.
         :param ids: список id извлекаемых фильмов
@@ -208,7 +208,8 @@ class PostgresMovieExtractor:
         :rtype:
         """
 
-        genre_since = self.state.get_state(StateKeys.GENRE) or FIRST_DATE
+        genre_since = (self.state.get_state(StateKeys.GENRE)
+                       or SETTINGS.FIRST_DATE)
         flag = True
         for ids, genre_since in self.ids_genre_since_date(genre_since):
             if flag:
@@ -216,7 +217,8 @@ class PostgresMovieExtractor:
                 flag = False
             yield from self.get_filmworks(ids)
 
-        person_since = self.state.get_state(StateKeys.PERSON) or FIRST_DATE
+        person_since = (self.state.get_state(StateKeys.PERSON)
+                        or SETTINGS.FIRST_DATE)
         flag = True
         for ids, person_since in self.ids_person_since_date(person_since):
             if flag:
@@ -225,7 +227,7 @@ class PostgresMovieExtractor:
             yield from self.get_filmworks(ids)
 
         film_work_since = self.state.get_state(
-            StateKeys.FILMWORK) or FIRST_DATE
+            StateKeys.FILMWORK) or SETTINGS.FIRST_DATE
         flag = True
         for ids, fw_since in self.ids_film_work_since_date(film_work_since):
             if flag:
