@@ -11,11 +11,11 @@ logging.basicConfig(
 
 
 class PostgresDSL(BaseSettings):
-    dbname: str = Field(default='movies_database', env='DB_NAME')
-    user: str = Field(default='app', env='DB_USER')
-    password: str = Field(default='123qwe', env='DB_PASSWORD')
-    host: str = Field(default='127.0.0.1', env='DB_HOST')
-    port: str = Field(default='5432', env='DB_PORT')
+    dbname: str = Field(default='movies_database', env='POSTGRES_DB')
+    user: str = Field(default='app', env='POSTGRES_USER')
+    password: str = Field(default='123qwe', env='POSTGRES_PASSWORD')
+    host: str = Field(default='127.0.0.1', env='POSTGRES_DB_HOST')
+    port: str = Field(default='5432', env='POSTGRES_DB_PORT')
 
     class Config:
         env_file = os.environ.get('PATH_TO_ENV', default='../.env')

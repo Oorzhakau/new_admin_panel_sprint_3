@@ -1,7 +1,6 @@
 certifi==2022.9.24
 elastic-transport==8.4.0
 elasticsearch==8.4.3
-pkg_resources==0.0.0
 psycopg2-binary==2.9
 pydantic==1.10.2
 python-dateutil==2.8.2
